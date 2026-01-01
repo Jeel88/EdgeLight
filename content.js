@@ -4,6 +4,7 @@
 let overlay = null;
 let cameraActive = false;
 let extensionEnabled = true;
+let hoverDim = false; // Is mouse over the border?
 
 // 1. Inject Detection Script (injected.js)
 function injectScript(file) {
@@ -13,7 +14,6 @@ function injectScript(file) {
         this.remove();
     };
     (document.head || document.documentElement).appendChild(script);
-    // console.log("EdgeLight: injected.js script tag added");
 }
 
 try {
@@ -25,13 +25,33 @@ try {
 // 2. Listen for Camera State (from injected.js)
 window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'EDGELIGHT_CAMERA_STATE') {
-        // console.log("EdgeLight: Camera state ->", event.data.active);
         cameraActive = event.data.active;
         refreshOverlayState();
     }
 });
 
-// 3. Overlay Logic
+// 3. Mouse Tracking for Smart Hover
+window.addEventListener('mousemove', (e) => {
+    if (!cameraActive || !extensionEnabled) return;
+
+    chrome.storage.local.get(['thickness'], (result) => {
+        const thickness = result.thickness || 50;
+        const x = e.clientX;
+        const y = e.clientY;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        // Check if within 'thickness' of any edge
+        const nearEdge = (x < thickness) || (x > w - thickness) || (y < thickness) || (y > h - thickness);
+
+        if (nearEdge !== hoverDim) {
+            hoverDim = nearEdge;
+            refreshOverlayState();
+        }
+    });
+});
+
+// 4. Overlay Logic
 function createOverlay() {
     if (overlay) return;
     overlay = document.createElement('div');
@@ -46,7 +66,7 @@ function createOverlay() {
         zIndex: '2147483647',
         boxSizing: 'border-box',
         display: 'none',
-        transition: 'opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)', // Apple-like smooth input
+        transition: 'opacity 0.4s ease-out', // Slightly faster response
         opacity: '0'
     });
     document.documentElement.appendChild(overlay);
@@ -62,17 +82,20 @@ function refreshOverlayState() {
 
         if (shouldShow) {
             overlay.style.display = 'block';
-            // Update style before fading in
+
+            // If hovering, dim drastically to allow visibility
+            const targetOpacity = hoverDim ? '0.1' : '1';
+
             updateOverlayStyle(settings);
 
             requestAnimationFrame(() => {
-                overlay.style.opacity = '1';
+                overlay.style.opacity = targetOpacity;
             });
         } else {
             overlay.style.opacity = '0';
             setTimeout(() => {
                 if (!cameraActive || !extensionEnabled) overlay.style.display = 'none';
-            }, 600);
+            }, 400);
         }
     });
 }
@@ -87,7 +110,7 @@ function updateOverlayStyle(settings) {
     // Mac Style Constants
     // Fixed INNER radius to keep the sleek look.
     // Formula: OuterRadius = InnerRadius + Thickness
-    const innerRadius = 24;
+    const innerRadius = 18;
     const outerRadius = innerRadius + thickness;
 
     overlay.style.borderRadius = `${outerRadius}px`;
