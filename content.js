@@ -108,9 +108,9 @@ function updateOverlayStyle(settings) {
     const thickness = settings.thickness !== undefined ? settings.thickness : 20;
 
     // Mac Style Constants
-    // Fixed INNER radius to keep the sleek look.
-    // Formula: OuterRadius = InnerRadius + Thickness
-    const innerRadius = 18;
+    // Dynamic Inner Radius to avoid "boxy" look at high widths.
+    // Making Inner Radius equal to Thickness ensures it's always soft.
+    const innerRadius = thickness;
     const outerRadius = innerRadius + thickness;
 
     overlay.style.borderRadius = `${outerRadius}px`;
