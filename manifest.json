@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "EdgeLight - Webcam Ring Light",
-    "version": "2.0",
+    "version": "2.1",
     "description": "Simulate a studio ring light for your webcam directly in the browser.",
     "permissions": [
         "storage",
@@ -32,6 +32,16 @@
                 "content.js"
             ],
             "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "injected.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
         }
     ]
 }

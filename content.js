@@ -2,7 +2,36 @@
 // Creates a bright border overlay on the page
 
 let overlay = null;
+let cameraActive = false;
+let extensionEnabled = true;
 
+// 1. Inject Detection Script (injected.js)
+function injectScript(file) {
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL(file);
+    script.onload = function () {
+        this.remove();
+    };
+    (document.head || document.documentElement).appendChild(script);
+    // console.log("EdgeLight: injected.js script tag added");
+}
+
+try {
+    injectScript('injected.js');
+} catch (e) {
+    console.log("EdgeLight: Injection failed. Manual mode may be limited.", e);
+}
+
+// 2. Listen for Camera State (from injected.js)
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'EDGELIGHT_CAMERA_STATE') {
+        // console.log("EdgeLight: Camera state ->", event.data.active);
+        cameraActive = event.data.active;
+        refreshOverlayState();
+    }
+});
+
+// 3. Overlay Logic
 function createOverlay() {
     if (overlay) return;
     overlay = document.createElement('div');
@@ -13,31 +42,56 @@ function createOverlay() {
         left: '0',
         width: '100vw',
         height: '100vh',
-        pointerEvents: 'none', // Allow clicking through the empty middle
-        zIndex: '2147483647',   // Max z-index
+        pointerEvents: 'none',
+        zIndex: '2147483647',
         boxSizing: 'border-box',
-        display: 'none'         // Hidden by default
+        display: 'none',
+        transition: 'opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)', // Apple-like smooth input
+        opacity: '0'
     });
     document.documentElement.appendChild(overlay);
 }
 
-function updateOverlay(settings) {
+function refreshOverlayState() {
     if (!overlay) createOverlay();
 
-    if (!settings.enabled) {
-        overlay.style.display = 'none';
-        return;
-    }
+    chrome.storage.local.get(['enabled', 'intensity', 'temperature', 'thickness'], (settings) => {
+        extensionEnabled = settings.enabled !== false;
 
-    overlay.style.display = 'block';
+        const shouldShow = extensionEnabled && cameraActive;
 
-    // Calculate RGB from Temperature
+        if (shouldShow) {
+            overlay.style.display = 'block';
+            // Update style before fading in
+            updateOverlayStyle(settings);
+
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
+        } else {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (!cameraActive || !extensionEnabled) overlay.style.display = 'none';
+            }, 600);
+        }
+    });
+}
+
+function updateOverlayStyle(settings) {
+    if (!overlay) return;
+
     const color = getKelvinColor(settings.temperature || 5500);
-    const opacity = (settings.intensity !== undefined ? settings.intensity : 50) / 100;
-    const thickness = settings.thickness !== undefined ? settings.thickness : 20; // Default 20px
+    const opacity = (settings.intensity !== undefined ? settings.intensity : 100) / 100;
+    const thickness = settings.thickness !== undefined ? settings.thickness : 20;
 
-    // Border Style
-    // We use a thick border.
+    // Mac Style Constants
+    // To get a nice rounded inner edge, OuterRadius must be > Thickness.
+    // Standard Mac screen corner radius is approx 12-16px, but "Mac Style" UI often implies larger: 20-40px.
+    // If we want the outer edges to likely match a modern rounded display, we try ~16px.
+    // If we want a noticeable "frame" look, we go higher.
+    const outerCornerRadius = 36;
+
+    overlay.style.borderRadius = `${outerCornerRadius}px`;
     overlay.style.border = `${thickness}px solid ${color.replace('rgb', 'rgba').replace(')', `, ${opacity})`)}`;
 }
 
@@ -45,31 +99,10 @@ function updateOverlay(settings) {
 function getKelvinColor(k) {
     let r, g, b;
     k = k / 100;
-    if (k <= 66) {
-        r = 255;
-    } else {
-        r = k - 60;
-        r = 329.698727446 * Math.pow(r, -0.1332047592);
-        if (r < 0) r = 0; if (r > 255) r = 255;
-    }
-    if (k <= 66) {
-        g = k;
-        g = 99.4708025861 * Math.log(g) - 161.1195681661;
-    } else {
-        g = k - 60;
-        g = 288.1221695283 * Math.pow(g, -0.0755148492);
-    }
+    if (k <= 66) { r = 255; } else { r = k - 60; r = 329.698727446 * Math.pow(r, -0.1332047592); if (r < 0) r = 0; if (r > 255) r = 255; }
+    if (k <= 66) { g = k; g = 99.4708025861 * Math.log(g) - 161.1195681661; } else { g = k - 60; g = 288.1221695283 * Math.pow(g, -0.0755148492); }
     if (g < 0) g = 0; if (g > 255) g = 255;
-    if (k >= 66) {
-        b = 255;
-    } else {
-        if (k <= 19) {
-            b = 0;
-        } else {
-            b = k - 10;
-            b = 138.5177312231 * Math.log(b) - 305.0447927307;
-        }
-    }
+    if (k >= 66) { b = 255; } else { if (k <= 19) { b = 0; } else { b = k - 10; b = 138.5177312231 * Math.log(b) - 305.0447927307; } }
     if (b < 0) b = 0; if (b > 255) b = 255;
     return `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
 }
@@ -80,14 +113,6 @@ createOverlay();
 // Listen
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
-        chrome.storage.local.get(['enabled', 'intensity', 'temperature', 'thickness'], (result) => {
-            updateOverlay(result);
-        });
+        refreshOverlayState();
     }
-});
-
-// Load initial
-chrome.storage.local.get(['enabled', 'intensity', 'temperature', 'thickness'], (result) => {
-    // Set defaults if new installs might miss them, though popup usually sets them logic handles undefined
-    updateOverlay(result);
 });

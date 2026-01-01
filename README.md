@@ -1,25 +1,22 @@
 # EdgeLight Chrome Extension
 
-Simulate a professional studio ring light using your own computer screen. This extension creates a customizable bright border around any website, using the monitor's light to illuminate your face for webcam calls.
+Simulate a professional studio ring light using your own computer screen. This extension creates a customizable bright border around any website **automatically when your camera activates**.
 
 ## Features
-- **Screen Ring Light**: Adds a bright border overlay to the current tab.
-- **Color Temperature**: Adjust from Cool Blue (2000K) to Warm Orange (10000K) to match your environment.
-- **Brightness Control**: Adjust the opacity of the light.
-- **Adjustable Thickness**: make the light border thick or thin.
-- **Privacy-First**: No camera access required. No data collection.
+- **Auto-Activation**: The ring light automatically turns on when your camera is in use (e.g., Google Meet, Zoom) and fades out when you stop.
+- **Mac-Style Design**: Sleek, glassmorphism UI that fits right into modern workflows.
+- **Color Temperature**: Adjust from Cool Blue to Warm Orange.
+- **Customizable**: Control Brightness and Ring Width.
+- **Privacy-First**: No video processing. We only detect *if* the camera is on to help you look your best.
 
 ## How to Use
-1.  **Click the EdgeLight icon** in your toolbar.
-2.  **Toggle ON**.
-3.  Adjust **Thickness**, **Brightness**, and **Color**.
-4.  The border will persist on the page. You can click through the empty center of the screen to interact with the page.
+1.  **Install & Pin**: Load the extension and pin it to your toolbar.
+2.  **Toggle ON**: Ensure the extension is enabled (Main toggle in popup).
+3.  **Start a Call**: Go to Google Meet or use the **Test Page**.
+4.  **Auto-Light**: As soon as the camera connects, the screen border will glow.
+5.  **Adjust**: Open the popup to tweak the color or thickness.
 
 ## Installation
 1.  Open Chrome `chrome://extensions`.
 2.  Enable **Developer Mode**.
 3.  Click **Load Unpacked** and select the extension folder.
-
-## Troubleshooting
-- **Light not appearing?** Refresh the page. The content script needs to inject the overlay.
-- **Can't click?** The center of the screen is click-through. If the border is very thick, it might cover edge buttons.

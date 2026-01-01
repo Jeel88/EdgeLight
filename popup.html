@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EdgeLight Controls</title>
+    <title>EdgeLight</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 
@@ -14,35 +14,29 @@
             <h1>EdgeLight</h1>
             <label class="switch">
                 <input type="checkbox" id="toggleExtension">
-                <span class="slider round"></span>
+                <span class="slider"></span>
             </label>
         </header>
 
         <div class="controls disabled" id="controlsArea">
             <div class="control-group">
-                <label for="intensity">Brightness (Opacity)</label>
+                <label for="intensity">Brightness <span id="val-intensity">100%</span></label>
                 <input type="range" id="intensity" min="10" max="100" value="100">
             </div>
 
             <div class="control-group">
-                <label for="thickness">Ring Width</label>
+                <label for="thickness">Width <span id="val-thickness">50px</span></label>
                 <input type="range" id="thickness" min="10" max="150" value="50">
             </div>
 
             <div class="control-group">
-                <label for="temperature">Color Temperature</label>
-                <div class="range-labels">
-                    <span>Cool</span>
-                    <span>Warm</span>
-                </div>
+                <label for="temperature">Color <span id="val-temp">Neutral</span></label>
                 <input type="range" id="temperature" min="2000" max="10000" value="5500" step="100">
             </div>
-
-            <!-- Vignette removed -->
         </div>
 
         <footer>
-            <p>Lights up your screen borders.</p>
+            Auto-active when camera is on.
         </footer>
     </div>
     <script src="popup.js"></script>

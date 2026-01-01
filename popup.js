@@ -2,8 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('toggleExtension');
     const controlsArea = document.getElementById('controlsArea');
     const intensity = document.getElementById('intensity');
-    const temperature = document.getElementById('temperature');
     const thickness = document.getElementById('thickness');
+    const temperature = document.getElementById('temperature');
+
+    // Labels
+    const valIntensity = document.getElementById('val-intensity');
+    const valThickness = document.getElementById('val-thickness');
+    const valTemp = document.getElementById('val-temp');
 
     // Load saved settings
     chrome.storage.local.get(['enabled', 'intensity', 'temperature', 'thickness'], (result) => {
@@ -12,18 +17,31 @@ document.addEventListener('DOMContentLoaded', () => {
         temperature.value = result.temperature || 5500;
         thickness.value = result.thickness || 50;
 
-        updateControlsState();
+        updateUI();
     });
 
     // Event Listeners
     toggle.addEventListener('change', () => {
         saveSettings();
-        updateControlsState();
+        updateUI();
     });
 
-    intensity.addEventListener('input', saveSettings);
-    temperature.addEventListener('input', saveSettings);
-    thickness.addEventListener('input', saveSettings);
+    [intensity, temperature, thickness].forEach(el => {
+        el.addEventListener('input', () => {
+            updateLabels();
+            saveSettings();
+        });
+    });
+
+    function updateLabels() {
+        valIntensity.innerText = intensity.value + '%';
+        valThickness.innerText = thickness.value + 'px';
+
+        const temp = parseInt(temperature.value);
+        if (temp < 4000) valTemp.innerText = 'Warm';
+        else if (temp > 7000) valTemp.innerText = 'Cool';
+        else valTemp.innerText = 'Neutral';
+    }
 
     function saveSettings() {
         const settings = {
@@ -35,11 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.local.set(settings);
     }
 
-    function updateControlsState() {
+    function updateUI() {
         if (toggle.checked) {
             controlsArea.classList.remove('disabled');
         } else {
             controlsArea.classList.add('disabled');
         }
+        updateLabels();
     }
 });
