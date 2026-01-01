@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>EdgeLight Test Camera</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #222;
+            color: #eee;
+            text-align: center;
+        }
+
+        video {
+            border: 2px solid #555;
+            background: #000;
+            max-width: 80%;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>EdgeLight Test Page</h1>
+    <p>Click "Start Camera" to test the EdgeLight extension.</p>
+    <button id="startBtn">Start Camera</button>
+    <br><br>
+    <video id="video" autoplay playsinline controls></video>
+
+    <script>
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startBtn');
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+                console.log("Stream started", stream);
+                // Log track settings to see if it's our processed track
+                const track = stream.getVideoTracks()[0];
+                console.log("Track settings:", track.getSettings());
+                console.log("Track label:", track.label);
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                alert("Error accessing camera: " + err.message);
+            }
+        });
+    </script>
+</body>
+
+</html>
