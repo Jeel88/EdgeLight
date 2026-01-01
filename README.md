@@ -1,6 +1,6 @@
 # EdgeLight Chrome Extension
 
-![EdgeLight Demo](C:/Users/jeels/.gemini/antigravity/brain/846373f3-375c-4aa6-8c3e-6397fb73cba5/edgelight_demo_mockup_1767257784240.png)
+![EdgeLight Demo](images/demo.png)
 
 **EdgeLight** transforms your computer screen into a professional ring light. It adds a customizable, glowing border around your browser window that automatically activates when your camera is in use. Perfect for Google Meet, Zoom, and other video conferencing tools.
 
