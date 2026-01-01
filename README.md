@@ -1,22 +1,31 @@
 # EdgeLight Chrome Extension
 
-Simulate a professional studio ring light using your own computer screen. This extension creates a customizable bright border around any website **automatically when your camera activates**.
+![EdgeLight Demo](C:/Users/jeels/.gemini/antigravity/brain/846373f3-375c-4aa6-8c3e-6397fb73cba5/edgelight_demo_mockup_1767257784240.png)
+
+**EdgeLight** transforms your computer screen into a professional ring light. It adds a customizable, glowing border around your browser window that automatically activates when your camera is in use. Perfect for Google Meet, Zoom, and other video conferencing tools.
 
 ## Features
-- **Auto-Activation**: The ring light automatically turns on when your camera is in use (e.g., Google Meet, Zoom) and fades out when you stop.
-- **Mac-Style Design**: Sleek, glassmorphism UI that fits right into modern workflows.
-- **Color Temperature**: Adjust from Cool Blue to Warm Orange.
-- **Customizable**: Control Brightness and Ring Width.
-- **Privacy-First**: No video processing. We only detect *if* the camera is on to help you look your best.
+- **Smart Auto-Activation**: Lights up only when your camera turns on. Fades out when you stop.
+- **Mac-Style Aesthetic**: Designed with a sleek, rounded-corner UI that feels native to macOS.
+- **Adjustable Lighting**:
+  - **Color Temperature**: Warm (Orange) to Cool (Blue).
+  - **Brightness**: Dimmable intensity.
+  - **Width**: Adjustable border thickness (up to 85px).
+- **Smart Hover**: The light fades out when you move your mouse over it, so you can still access buttons and scrollbars.
 
-## How to Use
-1.  **Install & Pin**: Load the extension and pin it to your toolbar.
-2.  **Toggle ON**: Ensure the extension is enabled (Main toggle in popup).
-3.  **Start a Call**: Go to Google Meet or use the **Test Page**.
-4.  **Auto-Light**: As soon as the camera connects, the screen border will glow.
-5.  **Adjust**: Open the popup to tweak the color or thickness.
+## Installation (Manual / GitHub)
+Since this extension is not on the Chrome Web Store yet, you can install it manually:
 
-## Installation
-1.  Open Chrome `chrome://extensions`.
-2.  Enable **Developer Mode**.
-3.  Click **Load Unpacked** and select the extension folder.
+1.  **Download the Code**: Clone this repository or download the ZIP.
+2.  **Open Extensions**: In Chrome, go to `chrome://extensions/`.
+3.  **Enable Developer Mode**: Toggle the switch in the top-right corner.
+4.  **Load Unpacked**: Click the button and select the `EdgeLight` folder (where `manifest.json` is located).
+5.  **Pin It**: Click the puzzle piece icon and pin EdgeLight to your toolbar.
+
+## Usage
+1.  **Toggle ON**: Click the extension icon and make sure the switch is green.
+2.  **Join a Call**: Open Google Meet or Zoom Web. 
+3.  **Shine**: As soon as your camera activates, the light will verify and fade in.
+
+## Privacy
+EdgeLight operates 100% locally. It listens for camera activity events to trigger the light but does **not** record, transmit, or process any video data.
