@@ -6,8 +6,12 @@ let cameraActive = false;
 let extensionEnabled = true;
 let hoverDim = false; // Is mouse over the border?
 
+// Helper to safely check runtime connection
+const isRuntimeConnected = () => !!chrome.runtime?.id;
+
 // 1. Inject Detection Script (injected.js)
 function injectScript(file) {
+    if (!isRuntimeConnected()) return;
     const script = document.createElement('script');
     script.src = chrome.runtime.getURL(file);
     script.onload = function () {
@@ -24,6 +28,7 @@ try {
 
 // 2. Listen for Camera State (from injected.js)
 window.addEventListener('message', (event) => {
+    if (!isRuntimeConnected()) return;
     if (event.data && event.data.type === 'EDGELIGHT_CAMERA_STATE') {
         cameraActive = event.data.active;
         refreshOverlayState();
@@ -33,22 +38,32 @@ window.addEventListener('message', (event) => {
 // 3. Mouse Tracking for Smart Hover
 window.addEventListener('mousemove', (e) => {
     if (!cameraActive || !extensionEnabled) return;
+    if (!isRuntimeConnected()) {
+        // Context invalidated, stop listening or just return
+        return;
+    }
 
-    chrome.storage.local.get(['thickness'], (result) => {
-        const thickness = result.thickness || 50;
-        const x = e.clientX;
-        const y = e.clientY;
-        const w = window.innerWidth;
-        const h = window.innerHeight;
+    try {
+        chrome.storage.local.get(['thickness'], (result) => {
+            if (chrome.runtime.lastError || !isRuntimeConnected()) return;
 
-        // Check if within 'thickness' of any edge
-        const nearEdge = (x < thickness) || (x > w - thickness) || (y < thickness) || (y > h - thickness);
+            const thickness = result.thickness || 50;
+            const x = e.clientX;
+            const y = e.clientY;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
 
-        if (nearEdge !== hoverDim) {
-            hoverDim = nearEdge;
-            refreshOverlayState();
-        }
-    });
+            // Check if within 'thickness' of any edge
+            const nearEdge = (x < thickness) || (x > w - thickness) || (y < thickness) || (y > h - thickness);
+
+            if (nearEdge !== hoverDim) {
+                hoverDim = nearEdge;
+                refreshOverlayState();
+            }
+        });
+    } catch (err) {
+        // Suppress "Extension context invalidated"
+    }
 });
 
 // 4. Overlay Logic
@@ -73,31 +88,40 @@ function createOverlay() {
 }
 
 function refreshOverlayState() {
+    if (!isRuntimeConnected()) return;
+
     if (!overlay) createOverlay();
 
-    chrome.storage.local.get(['enabled', 'intensity', 'temperature', 'thickness'], (settings) => {
-        extensionEnabled = settings.enabled !== false;
+    try {
+        chrome.storage.local.get(['enabled', 'intensity', 'temperature', 'thickness'], (settings) => {
+            if (chrome.runtime.lastError || !isRuntimeConnected()) return;
 
-        const shouldShow = extensionEnabled && cameraActive;
+            extensionEnabled = settings.enabled !== false;
+            const shouldShow = extensionEnabled && cameraActive;
 
-        if (shouldShow) {
-            overlay.style.display = 'block';
+            if (shouldShow) {
+                overlay.style.display = 'block';
 
-            // If hovering, dim drastically to allow visibility
-            const targetOpacity = hoverDim ? '0.1' : '1';
+                // If hovering, dim drastically to allow visibility
+                const targetOpacity = hoverDim ? '0.1' : '1';
 
-            updateOverlayStyle(settings);
+                updateOverlayStyle(settings);
 
-            requestAnimationFrame(() => {
-                overlay.style.opacity = targetOpacity;
-            });
-        } else {
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                if (!cameraActive || !extensionEnabled) overlay.style.display = 'none';
-            }, 400);
-        }
-    });
+                requestAnimationFrame(() => {
+                    overlay.style.opacity = targetOpacity;
+                });
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    // Check again before hiding
+                    if (!isRuntimeConnected()) return;
+                    if (!cameraActive || !extensionEnabled) overlay.style.display = 'none';
+                }, 400);
+            }
+        });
+    } catch (e) {
+        // Silently fail if context is gone
+    }
 }
 
 function updateOverlayStyle(settings) {
