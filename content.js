@@ -85,13 +85,12 @@ function updateOverlayStyle(settings) {
     const thickness = settings.thickness !== undefined ? settings.thickness : 20;
 
     // Mac Style Constants
-    // To get a nice rounded inner edge, OuterRadius must be > Thickness.
-    // Standard Mac screen corner radius is approx 12-16px, but "Mac Style" UI often implies larger: 20-40px.
-    // If we want the outer edges to likely match a modern rounded display, we try ~16px.
-    // If we want a noticeable "frame" look, we go higher.
-    const outerCornerRadius = 36;
+    // Fixed INNER radius to keep the sleek look.
+    // Formula: OuterRadius = InnerRadius + Thickness
+    const innerRadius = 24;
+    const outerRadius = innerRadius + thickness;
 
-    overlay.style.borderRadius = `${outerCornerRadius}px`;
+    overlay.style.borderRadius = `${outerRadius}px`;
     overlay.style.border = `${thickness}px solid ${color.replace('rgb', 'rgba').replace(')', `, ${opacity})`)}`;
 }
 
